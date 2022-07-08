@@ -76,7 +76,7 @@ for elem in root:
         break
 
 #   Подключаемся к БД и берем все записи
-connection = create_connection("test", "postgres", "306xz20J", "127.0.0.1", "5432")
+connection = create_connection("test", "postgres", "123456", "127.0.0.1", "5432") # Пример данных авторизации
 DB_data = execute_query(connection, "SELECT * from test").fetchall()
 
 '''
@@ -84,7 +84,7 @@ if not connection:
     connection = create_connection("postgres", "postgres", "306xz20J", "127.0.0.1", "5432")
     create_database_query = "CREATE DATABASE test"
     create_database(connection, create_database_query)
-    connection = create_connection("test", "postgres", "306xz20J", "127.0.0.1", "5432")
+    connection = create_connection("test", "postgres", "123456", "127.0.0.1", "5432") # Пример данных авторизации
 
 try:
     check_test_table = "SELECT pg_relation_size('test')"
