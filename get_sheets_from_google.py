@@ -138,7 +138,7 @@ for elem in data:
                     WHERE id = {DB_elem[0]}
                 """
                 execute_query(connection, update_cost, [elem[1], elem[2]])
-                #print("Стоимость заказа изменена: ", elem)
+                # print("Стоимость заказа изменена: ", elem)
 
             if elem[2] != DB_elem[4]:  # Если срок поставки был изменен
                 update_delivery_time = f"""
@@ -147,7 +147,7 @@ for elem in data:
                     WHERE id = {DB_elem[0]}
                 """
                 execute_query(connection, update_delivery_time, elem[3])
-                #print("Срок поставки изменен: ", elem)
+                # print("Срок поставки изменен: ", elem)
                 # Мог написать отправку в ТГ, но пришлось пропустить из-за времени
 
     if not find:
@@ -155,13 +155,13 @@ for elem in data:
             Пишем строку в БД.
             Половину дня пытался сделать одним запросом, что-то пошло не так.
         '''
-        #print("Новая строка: ", elem)
+        # print("Новая строка: ", elem)
         values = ", ".join(["%s"] * len(elem))
         insert_test_table = f"INSERT INTO test (order_number, cost_in_dollars, cost_in_rubles, delivery_time) VALUES ({values})"
         execute_query(connection, insert_test_table, elem)
 
-#print(data)
-#print(DB_data)
+# print(data)
+# print(DB_data)
 
 id_delete_str = []
 
@@ -169,6 +169,6 @@ id_delete_str = []
 for i, elem in enumerate(DB_data):
     if i not in list_i:
         id_delete_str.append(elem[0])
-        #print("Строка для удаления: ", elem)
+        # print("Строка для удаления: ", elem)
 
 execute_query(connection, "DELETE FROM test WHERE id = %s", id_delete_str)
