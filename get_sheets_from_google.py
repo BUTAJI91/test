@@ -81,7 +81,7 @@ DB_data = execute_query(connection, "SELECT * from test").fetchall()
 
 '''
 if not connection:
-    connection = create_connection("postgres", "postgres", "306xz20J", "127.0.0.1", "5432")
+    connection = create_connection("test", "postgres", "123456", "127.0.0.1", "5432") # Пример данных авторизации
     create_database_query = "CREATE DATABASE test"
     create_database(connection, create_database_query)
     connection = create_connection("test", "postgres", "123456", "127.0.0.1", "5432") # Пример данных авторизации
@@ -112,6 +112,7 @@ for elem in data:
         Удаляем ID, получаем рубли с учетом курса, приводим дату в формат datetime.date.
     '''
     elem.pop(0)
+    elem[0] = int(elem[0])
     elem[1] = float(elem[1])
     elem.insert(2, rate * elem[1])
     elem[3] = datetime.date(
@@ -132,43 +133,43 @@ for elem in data:
             list_i.append(i)  # Пишем индекс строки (нужно для удаления строк БД, удаленных из Google)
 
             if elem[1] != DB_elem[2]:  # Если стоимость заказа была изменена
-                update_cost = f"""
+                '''update_cost = f"""
                     UPDATE test
-                    SET cost_in_dollars = %s and cost_in_rubles = %s
+                    SET cost_in_dollars = %s AND cost_in_rubles = %s
                     WHERE id = {DB_elem[0]}
                 """
-                execute_query(connection, update_cost, [elem[1], elem[2]])
-                # print("Стоимость заказа изменена: ", elem)
+                execute_query(connection, update_cost, [elem[1], elem[2]])'''
+                print("Стоимость заказа изменена: ", DB_elem, " (Было), ", elem, " (Стало)")
 
-            if elem[2] != DB_elem[4]:  # Если срок поставки был изменен
+            if elem[3] != DB_elem[4]:  # Если срок поставки был изменен
                 update_delivery_time = f"""
                     UPDATE test
                     SET delivery_time = %s
                     WHERE id = {DB_elem[0]}
                 """
                 execute_query(connection, update_delivery_time, elem[3])
-                # print("Срок поставки изменен: ", elem)
-                # Мог написать отправку в ТГ, но пришлось пропустить из-за времени
+                print("Срок поставки изменен: ", DB_elem, " (Было), ", elem, " (Стало)")
+                # Мог написать отправку в ТГ, но пришлось пропустить из-за отсутствия времени
 
+    # Пишем строку в БД
     if not find:
-        '''
-            Пишем строку в БД.
-            Половину дня пытался сделать одним запросом, что-то пошло не так.
-        '''
-        # print("Новая строка: ", elem)
         values = ", ".join(["%s"] * len(elem))
-        insert_test_table = f"INSERT INTO test (order_number, cost_in_dollars, cost_in_rubles, delivery_time) VALUES ({values})"
+        insert_test_table = f"""
+            INSERT INTO test
+            (order_number, cost_in_dollars, cost_in_rubles, delivery_time)
+            VALUES ({values})
+        """
         execute_query(connection, insert_test_table, elem)
+        print("Новая строка: ", elem)
 
-# print(data)
-# print(DB_data)
-
-id_delete_str = []
 
 #   Удаляем строки БД, которых уже нет в таблице Google
+id_delete_str = []
 for i, elem in enumerate(DB_data):
     if i not in list_i:
         id_delete_str.append(elem[0])
-        # print("Строка для удаления: ", elem)
+        print("Строка для удаления: ", elem)
 
-execute_query(connection, "DELETE FROM test WHERE id = %s", id_delete_str)
+if id_delete_str:
+    execute_query(connection, "DELETE FROM test WHERE id = %s", id_delete_str)
+
